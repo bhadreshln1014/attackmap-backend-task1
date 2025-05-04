@@ -1,4 +1,5 @@
 from mongoengine import Document, EmbeddedDocument, fields
+from datetime import datetime
 
 class Location(EmbeddedDocument):
     latitude = fields.FloatField(required = True)
@@ -12,4 +13,19 @@ class CyberAttack(Document):
     severity = fields.IntField(required = True)
     timestamp = fields.DateTimeField(required = True)
     additional_details = fields.DictField()
+
+class NotificationRule(Document):
+    name = fields.StringField(required = True)
+    attack_type = fields.StringField()
+    country = fields.StringField()
+    min_severity = fields.IntField()
+    max_severity = fields.IntField()
+    active = fields.BooleanField(default = True)
+    created_at = fields.DateTimeField(default = datetime.now)
+
+class Notification(Document):
+    rule_name = fields.StringField(required = True)
+    attack_id = fields.StringField(required = True)
+    triggered_at = fields.DateTimeField(default = datetime.now)
+    details = fields.DictField()
 

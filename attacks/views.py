@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from attacks.models import CyberAttack
-from attacks.serializers import CyberAttackSerializer
+from attacks.models import CyberAttack, NotificationRule, Notification
+from attacks.serializers import CyberAttackSerializer, NotificationRuleSerializer, NotificationSerializer
 from datetime import datetime
+from rest_framework import status
 
 class AttackListView(APIView):
     def get(self, request):
@@ -161,3 +162,22 @@ class AttackStatisticsView(APIView):
             "by_attack_type": dict(type_counts),
             "by_severity": dict(severity_counts)
         })
+
+class NotificationRuleView(APIView):
+    def get(self, request):
+        rules = NotificationRule.objects()
+        serializer = NotificationRuleSerializer(rules, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = NotificationRuleSerializer(data=request.data)
+        if serializer.is_valid():
+            NotificationRule(**serializer.validated_data).save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class NotificationLogView(APIView):
+    def get(self, request):
+        logs = Notification.objects.order_by('-triggered_at')
+        serializer = NotificationSerializer(logs, many=True)
+        return Response(serializer.data)
