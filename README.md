@@ -1,4 +1,4 @@
-# Cyberattack Map Backend – Internship Task 1
+# Cyberattack Data Map Backend – Internship Task 1
 
 This is a Django-based backend service designed to provide real-time cyberattack data for visualizations on a map or globe. It connects to MongoDB and exposes RESTful API endpoints for attack data, statistics, and Mapbox-compatible formats.
 
@@ -13,14 +13,7 @@ This is a Django-based backend service designed to provide real-time cyberattack
   - Returning GeoJSON data for visualizations
 - Includes basic unit tests using Django’s test framework
 
-## Tech Stack
-
-- Python 3.11+
-- Django 5
-- MongoDB
-- MongoEngine
-- Django REST Framework
-- Faker
+---
 
 ## Setup Instructions
 
@@ -54,9 +47,38 @@ python manage.py generate_attacks
 ```bash
 python manage.py runserver
 ```
+---
 
+## MongoEngine Models – Task 1
 
-## 📡 API Endpoints
+### `Location` (EmbeddedDocument)
+
+Represents a geographical location, used as both source and destination in an attack.
+
+| Field       | Type   | Description               |
+|-------------|--------|---------------------------|
+| `latitude`  | Float  | Latitude of the location  |
+| `longitude` | Float  | Longitude of the location |
+| `country`   | String | Country name              |
+
+---
+
+### `CyberAttack` (Document)
+
+Represents a cyberattack record in the database.
+
+| Field                  | Type         | Description                                  |
+|------------------------|--------------|----------------------------------------------|
+| `source_location`      | `Location`   | Origin of the attack                         |
+| `destination_location` | `Location`   | Target of the attack                         |
+| `attack_type`          | String       | e.g., DDoS, Phishing, Malware                |
+| `severity`             | Integer      | Severity rating (1 to 10)                    |
+| `timestamp`            | DateTime     | When the attack occurred                     |
+| `additional_details`   | Dict         | Extra metadata (e.g., IP addresses, protocol) |
+
+---
+
+## API Endpoints
 
 ### `GET /api/attacks/`
 
@@ -195,6 +217,163 @@ attackmap-backend/
 ├── requirements.txt
 ```
 
+# Notification System - Internship Task 2
+
+This is an extension of the Cyberattack API backend. Task 2 implements a rule-based **notification engine** that scans cyberattack data and triggers alerts when defined conditions are met.
+
+---
+
+## Features
+
+- Define notification rules with flexible conditions:
+  - By `attack_type`, `country`, and severity range
+- Automatically generate alerts when a cyberattack matches a rule
+- Prevents duplicate notifications for the same attack and rule
+- REST API endpoints to create/list rules and view triggered notifications
+- A management command to run the rule evaluator logic
+- Fully tested with clean test DB setup
+
+---
+
+## How It Works
+
+1. You create a rule like:  
+   _"Alert me for DDoS attacks in USA with severity > 7"_
+
+2. The system runs a scanner:
+   - Compares all rules against existing cyberattacks
+   - If a match is found → stores a `Notification`
+
+3. You can then:
+   - View all rules
+   - View all triggered notifications
+
+---
+
+## MongoEngine Models - Task 2
+
+### `NotificationRule`
+Defines an alert condition.
+
+| Field         | Type      | Description                            |
+|---------------|-----------|----------------------------------------|
+| `name`        | String    | Rule name                              |
+| `attack_type` | String    | Optional attack type filter            |
+| `country`     | String    | Optional country filter (source or dest) |
+| `min_severity`| Integer   | Optional min severity filter           |
+| `max_severity`| Integer   | Optional max severity filter           |
+| `active`      | Boolean   | Whether the rule is active             |
+| `created_at`  | DateTime  | Timestamp of creation                  |
+
+---
+
+### `Notification`
+Represents an alert triggered by a rule.
+
+| Field         | Type      | Description                            |
+|---------------|-----------|----------------------------------------|
+| `rule_name`   | String    | Name of the rule that was triggered    |
+| `attack_id`   | String    | The matched CyberAttack ID             |
+| `triggered_at`| DateTime  | Timestamp of alert creation            |
+| `details`     | Dict      | Snapshot of the matched attack         |
+
+---
+
+## API Endpoints
+
+### `POST /api/notifications/rules/`
+
+Create a new rule.
+
+**Request:**
+```json
+{
+  "name": "High Severity Malware in India",
+  "attack_type": "Malware",
+  "country": "India",
+  "min_severity": 7
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": "...",
+  "name": "High Severity Malware in India",
+  "attack_type": "Malware",
+  "country": "India",
+  "min_severity": 7,
+  "active": true,
+  "created_at": "2025-05-04T12:34:56Z"
+}
+```
+
+---
+
+### `GET /api/notifications/rules/`
+
+List all notification rules.
+
+**Response:**
+```json
+[
+  {
+    "id": "...",
+    "name": "DDoS in USA",
+    "attack_type": "DDoS",
+    "country": "USA",
+    "min_severity": 8,
+    "active": true,
+    "created_at": "2025-05-04T12:00:00Z"
+  }
+]
+```
+
+---
+
+### `GET /api/notifications/logs/`
+
+List all triggered notifications.
+
+**Response:**
+```json
+[
+  {
+    "rule_name": "DDoS in USA",
+    "attack_id": "6817172b70e0f9aa6b9a87f4",
+    "triggered_at": "2025-05-04T13:30:00Z",
+    "details": {
+      "attack_type": "DDoS",
+      "severity": 9,
+      "country_src": "USA",
+      "country_dst": "Germany",
+      "timestamp": "2025-05-04T13:29:00Z"
+    }
+  }
+]
+```
+
+---
+## Evaluate Rules
+The core logic to match attack data to rules is run via:
+```bash
+python manage.py evaluate_rules
+```
+
+---
+
+## Tech Stack
+
+- Python 3.11+
+- Django 5
+- MongoDB
+- MongoEngine
+- Django REST Framework
+- Faker
+
+---
+
 ## Author Details
 
 **Name:** Bhadresh
@@ -206,10 +385,3 @@ attackmap-backend/
 **Email:** bhadreshln674@gmail.com
 
 **GitHub:** [https://github.com/bhadreshln1014](bhadreshln1014)
-
-
-
-
-
-
-
