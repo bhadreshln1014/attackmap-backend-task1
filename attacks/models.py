@@ -22,6 +22,10 @@ class NotificationRule(Document):
     max_severity = fields.IntField()
     active = fields.BooleanField(default = True)
     created_at = fields.DateTimeField(default = datetime.now)
+    threshold_count = fields.IntField(required=False)         
+    time_window_minutes = fields.IntField(required=False)       
+    cooldown_minutes = fields.IntField(default=10)              
+    last_triggered_at = fields.DateTimeField(default=None)      
 
 class Notification(Document):
     rule_name = fields.StringField(required = True)

@@ -16,10 +16,13 @@ class CyberAttackSerializer(serializers.Serializer):
 class NotificationRuleSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     name = serializers.CharField()
-    attack_type = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    country = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    attack_type = serializers.CharField(required=False, allow_blank=True)
+    country = serializers.CharField(required=False, allow_blank=True)
     min_severity = serializers.IntegerField(required=False)
     max_severity = serializers.IntegerField(required=False)
+    threshold_count = serializers.IntegerField(required=False)
+    time_window_minutes = serializers.IntegerField(required=False)
+    cooldown_minutes = serializers.IntegerField(required=False)
     active = serializers.BooleanField(default=True)
     created_at = serializers.DateTimeField(read_only=True)
 
