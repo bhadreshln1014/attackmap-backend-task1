@@ -255,15 +255,19 @@ This is an extension of the Cyberattack API backend. Task 2 implements a rule-ba
 ### `NotificationRule`
 Defines an alert condition.
 
-| Field         | Type      | Description                            |
-|---------------|-----------|----------------------------------------|
-| `name`        | String    | Rule name                              |
-| `attack_type` | String    | Optional attack type filter            |
-| `country`     | String    | Optional country filter (source or dest) |
-| `min_severity`| Integer   | Optional min severity filter           |
-| `max_severity`| Integer   | Optional max severity filter           |
-| `active`      | Boolean   | Whether the rule is active             |
-| `created_at`  | DateTime  | Timestamp of creation                  |
+| Field               | Type      | Description                                                       |
+|---------------------|-----------|-------------------------------------------------------------------|
+| `name`              | String    | Rule name                                                         |
+| `attack_type`       | String    | Optional attack type filter                                       |
+| `country`           | String    | Optional country filter (source or destination)                   |
+| `min_severity`      | Integer   | Optional minimum severity filter                                  |
+| `max_severity`      | Integer   | Optional maximum severity filter                                  |
+| `threshold_count`   | Integer   | Volume trigger: minimum number of attacks to match              |
+| `time_window_minutes` | Integer | Time window (in minutes) to count those attacks                 |
+| `cooldown_minutes`  | Integer   | Cooldown between notifications for the same rule (default: 10) |
+| `active`            | Boolean   | Whether the rule is active                                        |
+| `created_at`        | DateTime  | Timestamp when the rule was created                               |
+
 
 ---
 
@@ -288,10 +292,13 @@ Create a new rule.
 **Request:**
 ```json
 {
-  "name": "High Severity Malware in India",
-  "attack_type": "Malware",
-  "country": "India",
-  "min_severity": 7
+  "name": "DDoS surge in USA",
+  "attack_type": "DDoS",
+  "country": "USA",
+  "min_severity": 7,
+  "threshold_count": 5,
+  "time_window_minutes": 60,
+  "cooldown_minutes": 15
 }
 ```
 
