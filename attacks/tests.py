@@ -49,13 +49,11 @@ from datetime import datetime
 class NotificationSystemTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-
-        # ❗ Clean the collections before each test
+        
         NotificationRule.objects.delete()
         Notification.objects.delete()
         CyberAttack.objects.delete()
 
-        # Create some fresh test data
         loc_usa = Location(latitude=40.0, longitude=-75.0, country="USA")
         loc_de = Location(latitude=52.5, longitude=13.4, country="Germany")
 
